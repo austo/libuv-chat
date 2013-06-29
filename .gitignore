@@ -4,3 +4,4 @@
 *.[ao]
 *.mk
 *.Makefile
+.DS_Store

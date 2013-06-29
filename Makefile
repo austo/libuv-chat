@@ -12,7 +12,7 @@
 # ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 # OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-CFLAGS = -Ideps/uv/include -Wall -Wextra -Wno-unused-parameter
+CFLAGS = -Ideps/libuv/include -Ideps/libuv/src -Wall -Wextra -Wno-unused-parameter
 LDFLAGS = -lm
 
 ifeq ($(shell uname),Darwin)
@@ -29,10 +29,10 @@ all:	chat-server
 
 clean:
 	rm -f chat-server src/main.o
-	$(MAKE) $@ -C deps/uv
+	$(MAKE) $@ -C deps/libuv
 
-chat-server:	src/main.o deps/uv/libuv.a
+chat-server:	src/main.o deps/libuv/libuv.a
 	$(CC) $^ -o $@ $(LDFLAGS)
 
 deps/uv/libuv.a:
-	$(MAKE) all -C deps/uv
+	$(MAKE) all -C deps/libuv

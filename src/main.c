@@ -15,6 +15,7 @@
  */
 
 #include "uv.h"
+#include "queue.h"
 
 #include <stdio.h>
 #include <stdarg.h>
@@ -27,11 +28,12 @@
 #define SERVER_PORT 8000
 
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof((a)[0]))
-#define container_of  ngx_queue_data
+#define container_of(ptr, type, member) \
+  ((type *) ((char *) (ptr) - offsetof(type, member)))
 
 struct user
 {
-  ngx_queue_t queue; // linked list
+  void* queue[2]; // linked list
   uv_tcp_t handle;
   char id[32];
 };
@@ -48,11 +50,11 @@ static void on_write(uv_write_t *req, int status);
 static void on_close(uv_handle_t* handle);
 static void on_connection(uv_stream_t* server_handle, int status);
 
-static ngx_queue_t users;
+static void* users[2];
 
 int main(void)
 {
-  ngx_queue_init(&users);
+  QUEUE_INIT(&users);
 
   uv_tcp_t server_handle;
   uv_tcp_init(uv_default_loop(), &server_handle);
@@ -66,7 +68,7 @@ int main(void)
     fatal("uv_listen");
 
   printf("Listening at %s:%d\n", SERVER_ADDR, SERVER_PORT);
-  uv_run(uv_default_loop());
+  uv_run(uv_default_loop(), UV_RUN_DEFAULT);
 
   return 0;
 }
@@ -83,7 +85,7 @@ static void on_connection(uv_stream_t* server_handle, int status)
     fatal("uv_accept");
 
   // add him to the list of users
-  ngx_queue_insert_tail(&users, &user->queue);
+  QUEUE_INSERT_TAIL(&users, &user->queue);
   make_user_id(user);
 
   // now tell everyone
@@ -107,7 +109,7 @@ static void on_read(uv_stream_t* handle, ssize_t nread, uv_buf_t buf)
 
   if (nread == -1) {
     // user disconnected
-    ngx_queue_remove(&user->queue);
+    QUEUE_REMOVE(&user->queue);
     uv_close((uv_handle_t*) &user->handle, on_close);
     broadcast("* %s has left the building\n", user->id);
     return;
@@ -137,7 +139,7 @@ static void fatal(const char *what)
 
 static void broadcast(const char *fmt, ...)
 {
-  ngx_queue_t *q;
+  QUEUE* q;
   char msg[512];
   va_list ap;
 
@@ -145,7 +147,7 @@ static void broadcast(const char *fmt, ...)
   vsnprintf(msg, sizeof(msg), fmt, ap);
   va_end(ap);
 
-  ngx_queue_foreach(q, &users) {
+  QUEUE_FOREACH(q, &users) {
     struct user *user = container_of(q, struct user, queue);
     unicast(user, msg);
   }
