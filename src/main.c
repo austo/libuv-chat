@@ -60,12 +60,14 @@ int main(void)
   uv_tcp_init(uv_default_loop(), &server_handle);
 
   const struct sockaddr_in addr = uv_ip4_addr(SERVER_ADDR, SERVER_PORT);
-  if (uv_tcp_bind(&server_handle, addr))
+  if (uv_tcp_bind(&server_handle, addr)){
     fatal("uv_tcp_bind");
+  }
 
   const int backlog = 128;
-  if (uv_listen((uv_stream_t*) &server_handle, backlog, on_connection))
+  if (uv_listen((uv_stream_t*) &server_handle, backlog, on_connection)) {
     fatal("uv_listen");
+  }
 
   printf("Listening at %s:%d\n", SERVER_ADDR, SERVER_PORT);
   uv_run(uv_default_loop(), UV_RUN_DEFAULT);
@@ -81,8 +83,9 @@ static void on_connection(uv_stream_t* server_handle, int status)
   struct user *user = xmalloc(sizeof(*user));
   uv_tcp_init(uv_default_loop(), &user->handle);
 
-  if (uv_accept(server_handle, (uv_stream_t*) &user->handle))
+  if (uv_accept(server_handle, (uv_stream_t*) &user->handle)){
     fatal("uv_accept");
+  }
 
   // add him to the list of users
   QUEUE_INSERT_TAIL(&users, &user->queue);
@@ -183,8 +186,9 @@ static const char *addr_and_port(struct user *user)
 {
   struct sockaddr_in name;
   int namelen = sizeof(name);
-  if (uv_tcp_getpeername(&user->handle, (struct sockaddr*) &name, &namelen))
+  if (uv_tcp_getpeername(&user->handle, (struct sockaddr*) &name, &namelen)){
     fatal("uv_tcp_getpeername");
+  }
 
   char addr[16];
   static char buf[32];
