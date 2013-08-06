@@ -1,19 +1,11 @@
-# Copyright (c) 2012, Ben Noordhuis <info@bnoordhuis.nl>
-#
-# Permission to use, copy, modify, and/or distribute this software for any
-# purpose with or without fee is hereby granted, provided that the above
-# copyright notice and this permission notice appear in all copies.
-#
-# THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
-# WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
-# MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
-# ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
-# WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
-# ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
-# OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+UVSRC=/hd/_devResources/libuv/src
+SRCDIR=src
 
-CFLAGS = -Ideps/libuv/include -Ideps/libuv/src -Wall -Wextra -Wno-unused-parameter
-LDFLAGS = -lm
+CC = gcc
+
+CFLAGS = -I/usr/local/include -I$(UVSRC) \
+	-Wall -Wextra -Wno-unused-parameter
+LDFLAGS = -L/usr/local/lib -lm -luv
 
 ifeq ($(shell uname),Darwin)
 LDFLAGS += -framework CoreServices
@@ -23,16 +15,21 @@ ifeq ($(shell uname),Linux)
 LDFLAGS += -lrt
 endif
 
+SRCS = $(SRCDIR)/experiment.c
+
+OBJS = $(SRCS:.c=.o)
+
+TARGET = wchat
+
 .PHONY:	all clean
 
-all:	chat-server
+all:	wchat
 
 clean:
-	rm -f chat-server src/main.o
-	$(MAKE) $@ -C deps/libuv
+	rm -f core $(TARGET) *.o
 
-chat-server:	src/main.o deps/libuv/libuv.a
+$(notdir $(OBJS)):	$(SRCS)
+	$(CC) -c -g $(CFLAGS) $(SRCS)
+
+wchat:	$(notdir $(OBJS))
 	$(CC) $^ -o $@ $(LDFLAGS)
-
-deps/uv/libuv.a:
-	$(MAKE) all -C deps/libuv
