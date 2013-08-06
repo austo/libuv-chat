@@ -3,8 +3,8 @@
  * https://github.com/bnoordhuis/libuv-chat
  */
 
-#include "uv.h"
-#include "queue.h"
+#include <uv.h>
+#include <queue.h>
 
 #include <stdio.h>
 #include <stdarg.h>
@@ -23,9 +23,10 @@
 
 struct user {
   void* queue[2]; // linked list
+  char id[32];
   uv_tcp_t handle;
   uv_work_t work;
-  char id[32];
+  uv_buf_t buf;
 };
 
 
@@ -42,7 +43,8 @@ static void on_close(uv_handle_t* handle);
 static void on_connection(uv_stream_t* server_handle, int status);
 static void new_user_work(uv_work_t *req);
 static void new_user_after(uv_work_t *req);
-
+static void broadcast_work(uv_work_t *req);
+static void broadcast_after(uv_work_t *req);
 
 static void* users[2];
 
@@ -144,8 +146,32 @@ on_read(uv_stream_t* handle, ssize_t nread, uv_buf_t buf) {
     return;
   }
 
-  // broadcast message
-  broadcast("%s said: %.*s", user->id, (int) nread, buf.base);
+  user->buf = buf;
+  user->buf.len = nread;
+
+  int status = uv_queue_work(
+    uv_default_loop(),
+    &user->work,
+    broadcast_work,
+    (uv_after_work_cb)broadcast_after);
+
+  assert(status == 0);  
+}
+
+
+void
+broadcast_work(uv_work_t *req) {
+  struct user *user = (struct user*)req->data;
+  broadcast("%s said: %.*s", user->id, (int)user->buf.len, user->buf.base);
+}
+
+
+void 
+broadcast_after(uv_work_t *req) {
+  struct user *user = (struct user*)req->data;
+
+  fprintf(stdout, "Broadcast \"%.*s\" from %s.\n",
+    (int)(user->buf.len - 1), user->buf.base, user->id);
 }
 
 
@@ -153,6 +179,7 @@ static void
 on_write(uv_write_t *req, int status) {
   free(req);
 }
+
 
 static void
 on_close(uv_handle_t* handle) {

@@ -7,3 +7,5 @@ wchat
 *.Makefile
 .DS_Store
 *.sublime-*
+doc/
+deps/
