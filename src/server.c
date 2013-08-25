@@ -1,64 +1,25 @@
-/*
- * Adapted from "libuv-chat" by Ben Noordhuis
+/* Adapted from "libuv-chat" by Ben Noordhuis
  * https://github.com/bnoordhuis/libuv-chat
  */
 
-<<<<<<< HEAD:src/server.c
-=======
-#include <uv.h>
-#include <queue.h>
-
->>>>>>> 87af0ef56129084902b67ce81218ac668f36285b:src/experiment.c
 #include <stdio.h>
 #include <stdarg.h>
 #include <stddef.h> // offsetof
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#include <unistd.h> // usleep
 
-<<<<<<< HEAD:src/server.c
+
 #include "generic_queue.h"
 #include "server.h"
-=======
-#include <unistd.h> // usleep
->>>>>>> 87af0ef56129084902b67ce81218ac668f36285b:src/experiment.c
 
 #define SERVER_ADDR "0.0.0.0" // a.k.a. "all interfaces"
 
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof((a)[0]))
-<<<<<<< HEAD:src/server.c
 #define container_of(ptr, type, member) \
-    ((type *) ((char *) (ptr) - offsetof(type, member)))
-
-=======
-#define container_of(ptr, type, member)                 \
   ((type *) ((char *) (ptr) - offsetof(type, member)))
 
-struct user {
-  void* queue[2]; // linked list
-  char id[32];
-  uv_tcp_t handle;
-  uv_work_t work;
-  uv_buf_t buf;
-};
-
-
-static void *xmalloc(size_t len);
-static void fatal(const char *what);
-static void unicast(struct user *user, const char *msg);
-static void broadcast(const char *fmt, ...);
-static void make_user_id(struct user *user);
-static const char *addr_and_port(struct user *user);
-static uv_buf_t on_alloc(uv_handle_t* handle, size_t suggested_size);
-static void on_read(uv_stream_t* handle, ssize_t nread, uv_buf_t buf);
-static void on_write(uv_write_t *req, int status);
-static void on_close(uv_handle_t* handle);
-static void on_connection(uv_stream_t* server_handle, int status);
-static void new_user_work(uv_work_t *req);
-static void new_user_after(uv_work_t *req);
-static void broadcast_work(uv_work_t *req);
-static void broadcast_after(uv_work_t *req);
->>>>>>> 87af0ef56129084902b67ce81218ac668f36285b:src/experiment.c
 
 static void* users[2];
 
@@ -67,8 +28,8 @@ int
 main(int argc, char** argv) {
 
   if (argc != 2){
-    fprintf(stderr, "usage: %s port\n", argv[0]);
-    return 1;
+  fprintf(stderr, "usage: %s port\n", argv[0]);
+  return 1;
   }
 
   int s_port = atoi(argv[1]);
@@ -80,12 +41,12 @@ main(int argc, char** argv) {
 
   const struct sockaddr_in addr = uv_ip4_addr(SERVER_ADDR, s_port);
   if (uv_tcp_bind(&server_handle, addr)){
-    fatal("uv_tcp_bind");
+  fatal("uv_tcp_bind");
   }
 
   const int backlog = 128;
   if (uv_listen((uv_stream_t*) &server_handle, backlog, on_connection)) {
-    fatal("uv_listen");
+  fatal("uv_listen");
   }
 
   printf("Listening at %s:%d\n", SERVER_ADDR, s_port);
@@ -119,7 +80,7 @@ on_connection(uv_stream_t* server_handle, int status) {
 }
 
 
-void
+static void
 new_user_work(uv_work_t *req) {
   struct user *user = (struct user*)req->data;  
 
@@ -129,7 +90,7 @@ new_user_work(uv_work_t *req) {
 }
 
 
-void 
+static void 
 new_user_after(uv_work_t *req) {
   struct user *user = (struct user*)req->data;
 
@@ -153,7 +114,7 @@ on_read(uv_stream_t* handle, ssize_t nread, uv_buf_t buf) {
   struct user *user = container_of(handle, struct user, handle);
 
   if (nread == -1) {
-    // user disconnected
+  // user disconnected
     QUEUE_REMOVE(&user->queue);
     uv_close((uv_handle_t*) &user->handle, on_close);
     broadcast("* %s has left the building\n", user->id);
@@ -173,19 +134,19 @@ on_read(uv_stream_t* handle, ssize_t nread, uv_buf_t buf) {
 }
 
 
-void
+static void
 broadcast_work(uv_work_t *req) {
   struct user *user = (struct user*)req->data;
   broadcast("%s said: %.*s", user->id, (int)user->buf.len, user->buf.base);
 }
 
 
-void 
+static void 
 broadcast_after(uv_work_t *req) {
   struct user *user = (struct user*)req->data;
 
   fprintf(stdout, "Broadcast \"%.*s\" from %s.\n",
-    (int)(user->buf.len - 1), user->buf.base, user->id);
+  (int)(user->buf.len - 1), user->buf.base, user->id);
 }
 
 
@@ -240,25 +201,11 @@ unicast(struct user *user, const char *msg) {
 
 static void
 make_user_id(struct user *user) {
-<<<<<<< HEAD:src/server.c
-    // most popular baby names in Alabama in 2011
-    static const char *names[] = {
-        "Mason", "Ava", "James", "Madison", "Jacob", "Olivia", "John",
-        "Isabella", "Noah", "Addison", "Jayden", "Chloe", "Elijah",
-        "Elizabeth", "Jackson", "Abigail"
-    };
-    static unsigned int index0 = 0;
-    static unsigned int index1 = 1;
-
-    snprintf(user->id, sizeof(user->id), "%s %s", names[index0], names[index1]);
-    index0 = (index0 + 3) % ARRAY_SIZE(names);
-    index1 = (index1 + 7) % ARRAY_SIZE(names);
-=======
   // most popular baby names in Alabama in 2011
   static const char *names[] = {
-    "Mason", "Ava", "James", "Madison", "Jacob", "Olivia", "John", "Isabella",
-    "Noah", "Addison", "Jayden", "Chloe", "Elijah", "Elizabeth", "Jackson",
-    "Abigail"
+    "Mason", "Ava", "James", "Madison", "Jacob", "Olivia", "John",
+    "Isabella", "Noah", "Addison", "Jayden", "Chloe", "Elijah",
+    "Elizabeth", "Jackson", "Abigail"
   };
   static unsigned int index0 = 0;
   static unsigned int index1 = 1;
@@ -266,16 +213,17 @@ make_user_id(struct user *user) {
   snprintf(user->id, sizeof(user->id), "%s %s", names[index0], names[index1]);
   index0 = (index0 + 3) % ARRAY_SIZE(names);
   index1 = (index1 + 7) % ARRAY_SIZE(names);
+
   usleep(10000); //simulate blocking thread
->>>>>>> 87af0ef56129084902b67ce81218ac668f36285b:src/experiment.c
 }
 
 
-static const char
-*addr_and_port(struct user *user) {
+static const char *
+addr_and_port(struct user *user) {
   struct sockaddr_in name;
   int namelen = sizeof(name);
-  if (uv_tcp_getpeername(&user->handle, (struct sockaddr*) &name, &namelen)){
+  if (uv_tcp_getpeername(
+    &user->handle, (struct sockaddr*) &name, &namelen)){
     fatal("uv_tcp_getpeername");
   }
 
@@ -288,8 +236,8 @@ static const char
 }
 
 
-static void
-*xmalloc(size_t len) {
+static void *
+xmalloc(size_t len) {
   void *ptr = malloc(len);
   assert(ptr != NULL);
   return ptr;
