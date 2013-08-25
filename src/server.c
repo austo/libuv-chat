@@ -13,6 +13,7 @@
 
 #include "generic_queue.h"
 #include "server.h"
+#include "util.h"
 
 #define SERVER_ADDR "0.0.0.0" // a.k.a. "all interfaces"
 
@@ -181,9 +182,34 @@ broadcast(const char *fmt, ...) {
   vsnprintf(msg, sizeof(msg), fmt, ap);
   va_end(ap);
 
+  int n_users = 0;
+
   QUEUE_FOREACH(q, &users) {
     struct user *user = container_of(q, struct user, queue);
     unicast(user, msg);
+    ++n_users;
+  }
+  if (n_users > 1) {
+    sched_t **schedules = malloc(sizeof(sched_t *) * n_users);
+    n_users = 0;
+
+    QUEUE_FOREACH(q, &users) {
+      struct user *user = container_of(q, struct user, queue);
+      schedules[n_users++] = &user->schedule[0];
+    }
+    fprintf(stdout, "calling fill_disjoint_arrays with %d users.\n", n_users);
+    fill_disjoint_arrays(schedules, n_users, SCHED_SIZE);
+
+    int i, j;
+    for (i = 0; i < n_users; ++i) {
+      for (j = 0; j < SCHED_SIZE; ++j) {
+        if (j > 0) {
+          fprintf(stdout, ", ");
+        }
+        fprintf(stdout, "%d", schedules[i][j]);
+      }
+      fprintf(stdout, "\n");
+    }
   }
 }
 

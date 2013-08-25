@@ -6,7 +6,7 @@ CFLAGS = -I/usr/local/include -Wall -Wextra -Wno-unused-parameter
 
 LDFLAGS = -lm -luv
 
-SRCS = $(SOURCE_DIR)/server.c
+SRCS = $(SOURCE_DIR)/server.c $(SOURCE_DIR)/util.c
 
 OBJS = $(SRCS:.c=.o)
 
@@ -23,5 +23,5 @@ $(notdir $(OBJS)):	$(SRCS) $(HDRS)
 chat-server:    main.o
 	$(CC) $^ -o $@ $(LDFLAGS)
 
-server:     server.o
+server:     server.o util.o
 	$(CC) $^ -o $@ $(LDFLAGS)

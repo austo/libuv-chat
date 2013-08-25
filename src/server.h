@@ -3,13 +3,18 @@
 
 #include <uv.h>
 
+#define SCHED_SIZE 100
+#define ID_SIZE 32
+
+typedef unsigned sched_t;
 
 struct user {
   void* queue[2]; // linked list
-  char id[32];
+  char id[ID_SIZE];
   uv_tcp_t handle;
   uv_work_t work;
   uv_buf_t buf;
+  sched_t schedule[SCHED_SIZE];
 };
 
 
