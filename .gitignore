@@ -1,4 +1,6 @@
 /chat-server
+wchat
+/server
 /gyp-mac-tool
 /out/
 *.[ao]
@@ -6,4 +8,5 @@
 *.Makefile
 .DS_Store
 *.old
-/server
+*.sublime-*
+deps/
