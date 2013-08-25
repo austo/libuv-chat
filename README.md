@@ -1,4 +1,3 @@
-## a chat app done the hard way
+## threaded chat app
 
-Example libuv chat app for
-[NodeJS Conference - Dublin 2012](http://www.nodedublin.com/).
+Forked from [chat app example](https://github.com/bnoordhuis/libuv-chat)

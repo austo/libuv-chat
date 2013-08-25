@@ -28,8 +28,8 @@ int
 main(int argc, char** argv) {
 
   if (argc != 2){
-  fprintf(stderr, "usage: %s port\n", argv[0]);
-  return 1;
+    fprintf(stderr, "usage: %s port\n", argv[0]);
+    return 1;
   }
 
   int s_port = atoi(argv[1]);
@@ -41,12 +41,12 @@ main(int argc, char** argv) {
 
   const struct sockaddr_in addr = uv_ip4_addr(SERVER_ADDR, s_port);
   if (uv_tcp_bind(&server_handle, addr)){
-  fatal("uv_tcp_bind");
+    fatal("uv_tcp_bind");
   }
 
   const int backlog = 128;
   if (uv_listen((uv_stream_t*) &server_handle, backlog, on_connection)) {
-  fatal("uv_listen");
+    fatal("uv_listen");
   }
 
   printf("Listening at %s:%d\n", SERVER_ADDR, s_port);

@@ -10,3 +10,4 @@ wchat
 *.old
 *.sublime-*
 deps/
+*.gyp
