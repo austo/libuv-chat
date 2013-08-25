@@ -210,6 +210,7 @@ broadcast(const char *fmt, ...) {
       }
       fprintf(stdout, "\n");
     }
+    free(schedules);
   }
 }
 
