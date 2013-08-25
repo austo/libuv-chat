@@ -5,3 +5,5 @@
 *.mk
 *.Makefile
 .DS_Store
+*.old
+/server

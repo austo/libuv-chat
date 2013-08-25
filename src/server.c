@@ -3,9 +3,6 @@
  * https://github.com/bnoordhuis/libuv-chat
  */
 
-#include "uv.h"
-#include "queue.h"
-
 #include <stdio.h>
 #include <stdarg.h>
 #include <stddef.h> // offsetof
@@ -13,30 +10,15 @@
 #include <string.h>
 #include <assert.h>
 
+#include "generic_queue.h"
+#include "server.h"
+
 #define SERVER_ADDR "0.0.0.0" // a.k.a. "all interfaces"
 
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof((a)[0]))
-#define container_of(ptr, type, member)                 \
+#define container_of(ptr, type, member) \
     ((type *) ((char *) (ptr) - offsetof(type, member)))
 
-struct user
-{
-    void* queue[2]; // linked list
-    uv_tcp_t handle;
-    char id[32];
-};
-
-static void *xmalloc(size_t len);
-static void fatal(const char *what);
-static void unicast(struct user *user, const char *msg);
-static void broadcast(const char *fmt, ...);
-static void make_user_id(struct user *user);
-static const char *addr_and_port(struct user *user);
-static uv_buf_t on_alloc(uv_handle_t* handle, size_t suggested_size);
-static void on_read(uv_stream_t* handle, ssize_t nread, uv_buf_t buf);
-static void on_write(uv_write_t *req, int status);
-static void on_close(uv_handle_t* handle);
-static void on_connection(uv_stream_t* server_handle, int status);
 
 static void* users[2];
 
@@ -128,6 +110,7 @@ on_write(uv_write_t *req, int status) {
     free(req);
 }
 
+
 static void
 on_close(uv_handle_t* handle) {
     struct user *user = container_of(handle, struct user, handle);
@@ -175,9 +158,9 @@ static void
 make_user_id(struct user *user) {
     // most popular baby names in Alabama in 2011
     static const char *names[] = {
-        "Mason", "Ava", "James", "Madison", "Jacob", "Olivia", "John", "Isabella",
-        "Noah", "Addison", "Jayden", "Chloe", "Elijah", "Elizabeth", "Jackson",
-        "Abigail"
+        "Mason", "Ava", "James", "Madison", "Jacob", "Olivia", "John",
+        "Isabella", "Noah", "Addison", "Jayden", "Chloe", "Elijah",
+        "Elizabeth", "Jackson", "Abigail"
     };
     static unsigned int index0 = 0;
     static unsigned int index1 = 1;

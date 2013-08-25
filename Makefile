@@ -1,38 +1,27 @@
-# Copyright (c) 2012, Ben Noordhuis <info@bnoordhuis.nl>
-#
-# Permission to use, copy, modify, and/or distribute this software for any
-# purpose with or without fee is hereby granted, provided that the above
-# copyright notice and this permission notice appear in all copies.
-#
-# THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
-# WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
-# MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
-# ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
-# WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
-# ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
-# OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+SOURCE_DIR=$(DVR)/libuv-chat/src
 
-CFLAGS = -Ideps/libuv/include -Ideps/libuv/src -Wall -Wextra -Wno-unused-parameter
-LDFLAGS = -lm
+CC = gcc
 
-ifeq ($(shell uname),Darwin)
-LDFLAGS += -framework CoreServices
-endif
+CFLAGS = -I/usr/local/include -Wall -Wextra -Wno-unused-parameter
 
-ifeq ($(shell uname),Linux)
-LDFLAGS += -lrt
-endif
+LDFLAGS = -lm -luv
 
-.PHONY:	all clean
+SRCS = $(SOURCE_DIR)/server.c
 
-all:	chat-server
+OBJS = $(SRCS:.c=.o)
 
-clean:
-	rm -f chat-server src/main.o
-	$(MAKE) $@ -C deps/libuv
+.PHONY: all clean
 
-chat-server:	src/main.o deps/libuv/libuv.a
+all:    server	
+
+clean:	
+	rm -f server chat-server *.o core
+
+$(notdir $(OBJS)):	$(SRCS) $(HDRS)
+	$(CC) -c -g $(CFLAGS) $(SRCS)
+
+chat-server:    main.o
 	$(CC) $^ -o $@ $(LDFLAGS)
 
-deps/uv/libuv.a:
-	$(MAKE) all -C deps/libuv
+server:     server.o
+	$(CC) $^ -o $@ $(LDFLAGS)

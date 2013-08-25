@@ -14,8 +14,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include "uv.h"
-#include "queue.h"
+#include <uv.h>
 
 #include <stdio.h>
 #include <stdarg.h>
@@ -23,6 +22,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+
+#include "generic_queue.h"
 
 #define SERVER_ADDR "0.0.0.0" // a.k.a. "all interfaces"
 #define SERVER_PORT 8000

@@ -13,8 +13,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef QUEUE_H_
-#define QUEUE_H_
+#ifndef GENERIC_QUEUE_H
+#define GENERIC_QUEUE_H
 
 #include <stdint.h>
 
@@ -91,4 +91,4 @@ typedef void *QUEUE[2];
   }                                                                           \
   while (0)
 
-#endif /* QUEUE_H_ */
+#endif /* GENERIC_QUEUE_H */
